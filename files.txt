@@ -1,3 +1,4 @@
+/Users/Olivier/anaconda/lib/python2.7/site-packages/PyAstrOFit-0.0a1-py2.7.egg/.DS_Store
 /Users/Olivier/anaconda/lib/python2.7/site-packages/PyAstrOFit-0.0a1-py2.7.egg/EGG-INFO/dependency_links.txt
 /Users/Olivier/anaconda/lib/python2.7/site-packages/PyAstrOFit-0.0a1-py2.7.egg/EGG-INFO/not-zip-safe
 /Users/Olivier/anaconda/lib/python2.7/site-packages/PyAstrOFit-0.0a1-py2.7.egg/EGG-INFO/PKG-INFO
