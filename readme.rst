@@ -9,6 +9,9 @@ PyAstrOFit is a package dedicated to orbital fit within the
 MCMC approach, written in Python 2.7. The MCMC sampler makes
 direct use of emcee (Foreman-Mackey et al. 2013).
 
+This package works and is stable. However, it still requires substantial 
+improvement. 
+
 PyAstrOFit is being developed within the VORTEX team @ University of Liege (Belgium).
 It's still a work in progress. If you want to report a bug, suggest a feature or add a 
 feature please contact the main developer at owertz [at] ulg.ac.be or through 
