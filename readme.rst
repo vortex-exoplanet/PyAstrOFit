@@ -1,19 +1,5 @@
 
-________                      _                                  ____    ________
-`MMMMMMMb.                   dM.                                6MMMMb   `MMMMMMM 68b         
- MM    `Mb                  ,MMb                /              8P    Y8   MM    \ Y89   /     
- MM     MM ____    ___      d'YM.      ____    /M     ___  __ 6M      Mb  MM      ___  /M     
- MM     MM `MM(    )M'     ,P `Mb     6MMMMb\ /MMMMM  `MM 6MM MM      MM  MM   ,  `MM /MMMMM  
- MM    .M9  `Mb    d'      d'  YM.   MM'    `  MM      MM69   MM      MM  MMMMMM   MM  MM     
- MMMMMMM9'   YM.  ,P      ,P   `Mb   YM.       MM      MM'    MM      MM  MM   `   MM  MM     
- MM           MM  M       d'    YM.   YMMMMb   MM      MM     MM      MM  MM       MM  MM     
- MM           `Mbd'      ,MMMMMMMMb       `Mb  MM      MM     YM      M9  MM       MM  MM     
- MM            YMP       d'      YM. L    ,MM  YM.  ,  MM      8b    d8   MM       MM  YM.  , 
-_MM_            M      _dM_     _dMM_MYMMMM9    YMMM9 _MM_      YMMMM9   _MM_     _MM_  YMMM9 
-                d                                                                             
-           (8),P                                                                              
-            YMM
-
+ PyAstrOFit
 ------------------------------------
   Python Astrometric Orbit Fitting  
 ------------------------------------
