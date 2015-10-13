@@ -12,9 +12,9 @@ from Planet_data import get_planet_data
 from Sampler import toKepler
 
 try:
-    import triangle
+    import corner as triangle
 except ImportError:
-    raise Exception("You should install the Triangle package: https://github.com/dfm/triangle.py")
+    raise Exception("You should install the Triangle package: https://github.com/dfm/corner.py")
     
     
 __all__ = ["BayesianInference"]

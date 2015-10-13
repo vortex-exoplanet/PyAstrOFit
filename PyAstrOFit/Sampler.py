@@ -721,9 +721,9 @@ class AISampler(object,FileHandler):
         
         # DEPENDENCY
         try:
-            import triangle
+            import corner as triangle
         except:
-            raise Exception("You should install the Triangle package: https://github.com/dfm/triangle.py")
+            raise Exception("You should install the Triangle package: https://github.com/dfm/corner.py")
 
         # ISAMPLES
         if isamples is None:
