@@ -19,6 +19,7 @@ from Diagnostics import gelman_rubin
 from StatisticsMCMC import StatisticsMCMC
 from FileHandler import FileHandler
 import Orbit as o
+from Planet_data import get_planet_data
 
 from Toolbox import cpu_count, now
 
@@ -147,6 +148,7 @@ def lnlike(theta, ob, er, priors, l, synthetic = False):
     y = np.concatenate((ob['raPosition'],ob['decPosition']))
     yerr = np.concatenate((er['raError'],er['decError']))
     inv_sigma2 = 1.0/(yerr**2)
+    
     return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2)))
 
 # ------------------------------------------------------------------------------------------------------------------------------------------ 
@@ -199,50 +201,20 @@ class AISampler(object,FileHandler):
         # -----------------------------
         # Main part of the constructor
         # -----------------------------
-        
-        ## Get the data and convert the time of observation in JD        
-        if data == 'betapicb':
-            self._dataFilePath = packageName+'/res/exo/betaPicb.txt'
-        elif data == 'hr8799b':
-            self._dataFilePath = packageName+'/res/exo/hr8799b.txt' 
-        elif data == 'hr8799c':
-            self._dataFilePath = packageName+'/res/exo/hr8799c.txt'  
-        elif data == 'hr8799c_Pueyo':
-            self._dataFilePath = packageName+'/res/exo/hr8799c_Pueyo.txt'
-        elif data == 'hr8799c_Pueyo_largeEr':
-            self._dataFilePath = packageName+'/res/exo/hr8799c_Pueyo_largeEr.txt'            
-        elif data == 'hr8799c_withoutLBT':
-            self._dataFilePath = packageName+'/res/exo/hr8799c_withoutLBT.txt'  
-        elif data == 'hr8799c_selection':
-            self._dataFilePath = packageName+'/res/exo/hr8799c_selection.txt'              
-        elif data == 'hr8799d':
-            self._dataFilePath = packageName+'/res/exo/hr8799d.txt'             
-        elif data == 'hr8799e':
-            self._dataFilePath = packageName+'/res/exo/hr8799e.txt' 
-        elif data == 'orbit_test_0':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_0.txt' 
-        elif data == 'orbit_test_1':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_1.txt' 
-        elif data == 'orbit_test_2':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_2.txt' 
-        elif data == 'orbit_test_3':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_3.txt'             
-        elif data == 'orbit_test_3_true':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_3_true.txt'   
-        elif data == 'orbit_test_3_largeEr':
-            self._dataFilePath = packageName+'/res/exo/orbit_test_3_largeEr.txt'            
-        else:
-            self._dataFilePath = data
-        
-        try:
-            FileHandler.__init__(self,self._dataFilePath,addContent=[])
-            (self._ob, self._er) = FileHandler.getInfo(self)        
-            if len(self._ob.values()[0]) == 0:
-                raise Exception("The file '{}' seems to be empty.".format(self._dataFilePath))
-            self._ob['timePositionJD'] = [Time(self._ob['timePosition'][k],format='iso',scale='utc').jd for k in range(len(self._ob['timePosition']))]
-            self._l = len(self._ob['timePositionJD'])
-        except:
-            raise Exception("Crash during the load of your data. Is the path correct ? --> {}".format(self._dataFilePath))
+         
+        ## Get the data and convert the time of observation in JD                
+        self._ob, self._er = get_planet_data(data)
+        if self._ob is None and self._er is None:
+            try:
+                FileHandler.__init__(self,data,addContent=[])
+                (self._ob, self._er) = FileHandler.getInfo(self)        
+            except:
+                raise Exception("Crash during the load of your data. Is the path correct ? --> {}".format(data))
+
+        if len(self._ob.values()[0]) == 0:
+            raise Exception("The file '{}' seems to be empty.".format(data))
+        self._ob['timePositionJD'] = [Time(self._ob['timePosition'][k],format='iso',scale='utc').jd for k in range(len(self._ob['timePosition']))]
+        self._l = len(self._ob['timePositionJD'])                
                    
         self._data = data                 
         self._ndim = 6     
@@ -365,7 +337,7 @@ class AISampler(object,FileHandler):
                  verbose = True, 
                  showWalk = False, 
                  showCorner = False, 
-                 temporary = False):
+                 temporary = True):
         """
         Run an affine invariant mcmc algorithm in order to draw marginalized 
         distribution for the 6 Kepler orbital parameters.
@@ -420,6 +392,10 @@ class AISampler(object,FileHandler):
         showCorner: boolean, optional
             If True, the current corner plot is displaying at each statistical
             tests.
+        temporary: boolean, optional
+            If True, the chain and lnprobability are stored in the sampler_emcee
+            object. I will increase the size of the output file. So, prefer False
+            only if you need lnprobabiliy being recovered.
             
         Returns
         -------
@@ -509,7 +485,7 @@ class AISampler(object,FileHandler):
             print ''            
         start = datetime.datetime.now()
         
-        for k, res in enumerate(sampler_emcee.sample(self._pos,iterations=iterations,storechain=False)):
+        for k, res in enumerate(sampler_emcee.sample(self._pos,iterations=iterations,storechain=temporary)):
             chain = AISampler.storechain(self,k,res[0],chain)
 
             ## Criterion for statistical test
@@ -543,10 +519,10 @@ class AISampler(object,FileHandler):
                     chain_zero_truncated = AISampler.chain_zero_truncated(self,chain)
                     AISampler.showPDFCorner(self,isamples = chain_zero_truncated[:,int(np.floor(lisa*burnin)):,:].reshape((-1,6)), labels=labels)
                                         
-                if temporary: # under construction                   
-                    #isamples_pickle = AISampler.independentSamples(self, chain, length='burnin', burnin=burnin)
-                    #AISampler.save_pickle(self)
-                    pass
+#                if temporary: # under construction                   
+#                    #isamples_pickle = AISampler.independentSamples(self, chain, length='burnin', burnin=burnin)
+#                    #AISampler.save_pickle(self)
+#                    pass
 
                 
                 if k >= limit-1:
@@ -585,11 +561,12 @@ class AISampler(object,FileHandler):
                     else:
                         grCount = 0
                     
-
+            
             if (k+1) >= stop:
                 if verbose:
                     print("We have finished to run {} steps more (per walker) after the convergence".format(supp))
                 break
+                 
         
         if k >= limit-1 and verbose:
                 print 'We have reached the maximum number of steps per walker ({}).'.format(limit)
@@ -903,18 +880,27 @@ class AISamplerResults(AISampler):
         
         self._chain = chain
         self._input_parameters = input_parameters
-        self._internal_parameters = internal_parameters                 
+        self._internal_parameters = internal_parameters
+        self._sampler_parameters = sampler_parameters                 
+
+        self._lnprobability = sampler_emcee.lnprobability
+        sampler_emcee.reset()
         self._sampler_emcee = sampler_emcee
-        self._sampler_parameters = sampler_parameters
+        
+        
                        
 
     # ---------
     # Property
     # ---------
-    # --------- CHAIN    
+    # --------- CHAIN and LNPROBABILITY   
     @property
     def chain(self):
         return self._chain
+
+    @property
+    def lnprobability(self):
+        return self._lnprobability        
                               
     # --------- INPUT PARAMETER
     @property
@@ -961,13 +947,14 @@ class AISamplerResults(AISampler):
         results = {'input_parameters' : self.input_parameters, 
                    'internal_parameters' : self.internal_parameters, 
                    'sampler_parameters' : self.sampler_parameters,
-                   'chain' : chain}
+                   'chain' : chain,
+                   'lnprobability': self._lnprobability}
 
         with open(output,'wb') as fileSave:
             myPickler = pickle.Pickler(fileSave)
             myPickler.dump(results)         
       
-        print('The file "'+ output +'" has been successfully pickled.')        
+        print 'The file has been successfully saved:\n{}'.format(os.getcwd()+'/'+output)        
 
 
     # ------------------------------------------------------------------------------------------------------------------------------------------ 

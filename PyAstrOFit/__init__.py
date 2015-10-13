@@ -10,6 +10,7 @@
 #from .StatisticsMCMC import *
 from .Sampler import *
 from .BayesianInference import *
+#from .Planet_data import *
 
 __version__ = "1.0.0"
 

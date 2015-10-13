@@ -4,6 +4,7 @@ PyAstrOFit/Diagnostics.py
 PyAstrOFit/FileHandler.py
 PyAstrOFit/KeplerSolver.py
 PyAstrOFit/Orbit.py
+PyAstrOFit/Planet_data.py
 PyAstrOFit/Sampler.py
 PyAstrOFit/StatisticsMCMC.py
 PyAstrOFit/Toolbox.py

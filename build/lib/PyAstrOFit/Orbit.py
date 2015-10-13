@@ -259,9 +259,15 @@ class Orbit:
 # ------------------------------------------------------------------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------------------------------------------------------------------                     
-    def showOrbit(self,pointOfView="earth",unit="au",addPosition=[], addPoints=[], lim = [], show = True, link = False, figsize = (15,15), title = None, display=True, save=(False,str()), output = False):
-        """ Under construction """  
-        #print('UPDATE in progress ...')
+    def showOrbit(self,pointOfView="earth",unit="au",addPosition=[], addPoints=[], 
+                  lim=None, show=True, link=False, figsize=(10,10), title=None, 
+                  display=True, save=(False,str()), output=False, 
+                  addPosition_options={}, invert_xaxis=True, invert_yaxis=False,
+                  cardinal=(False,''), **kwargs):
+        """ 
+        Under construction 
+        
+        """  
         if isinstance(addPosition,list) == False:
             raise ValueError("The type of the parameter 'addPosition' is {}. It should be a list containing str or float/int.".format(type(addPosition)))
             
@@ -291,29 +297,45 @@ class Orbit:
         p = Orbit.positionOnOrbit(self,0,pointOfView,unit) # position of the periapsis
         an = Orbit.positionOnOrbit(self,-self.__periastron + np.array([0,np.pi]),pointOfView,unit) # position of the ascending node         
         
+        ############
+        ## FIGURE ##
+        ############
+        if lim is None:
+            lim1 = np.floor(13.*np.max(np.abs(o["decPosition"]))) / 10. 
+            lim2 = np.floor(13.*np.max(np.abs(o["raPosition"]))) / 10.
+            lim = np.max([lim1,lim2])
+            lim = [(-lim,lim),(-lim,lim)]        
+        
         plt.figure(figsize = figsize)
         plt.hold(True)
         plt.plot(0,0,'ko') # plot the star
         if show:            
-            plt.plot(o["raPosition"],o["decPosition"], color=(1-0/255.,1-97/255.,1-255/255.), linewidth=2) # plot the orbit        
+            orbit_color = kwargs.pop('color',(1-0/255.,1-97/255.,1-255/255.))
+            plt.plot(o["raPosition"],o["decPosition"], color=orbit_color, linewidth=2) # plot the orbit        
             plt.plot(p["raPosition"],p["decPosition"],'gs') # plot the position of the periapsis
             plt.plot(an["raPosition"],an["decPosition"],"k--")
         
-        if len(lim) == 0:
-            lim1 = np.floor(13.*np.max(np.abs(o["decPosition"]))) / 10. 
-            lim2 = np.floor(13.*np.max(np.abs(o["raPosition"]))) / 10.
-            lim = np.max([lim1,lim2])
-            lim = [(-lim,lim),(-lim,lim)]
-
         plt.xlim((lim[0][0],lim[0][1]))
         plt.ylim((lim[1][0],lim[1][1]))   
         plt.xticks(size=20)
         plt.yticks(size=20)
         plt.axes().set_aspect('equal')
-        plt.gca().invert_xaxis() # Then, East is left
-        if title != None:           
-            plt.title(title[0], fontsize=title[1], fontweight='bold')
         
+        # Ticks
+#        xticks_bounds = [np.ceil(lim[0][0]*10),np.floor(lim[0][1]*10)]
+#        xticks = np.arange(xticks_bounds[0]/10.,xticks_bounds[1]/10.,0.1)
+#        plt.xticks(xticks,xticks,size=20)
+#        
+#        yticks_bounds = [np.ceil(lim[1][0]*10),np.floor(lim[1][1]*10)]
+#        yticks = np.arange(np.floor(yticks_bounds[0]/10.),np.floor(yticks_bounds[1]/10.),0.1)
+#        plt.yticks(yticks,yticks,size=20)    
+        
+        
+        # Title
+        if title != None:           
+            plt.title(title[0], fontsize=title[1])#, fontweight='bold')
+        
+        # Unit
         if unit == 'au':
             plt.xlabel("x' (AU)")
             plt.ylabel("y' (AU)")
@@ -322,9 +344,11 @@ class Orbit:
             plt.ylabel("DEC ({0})".format(unit), fontsize=20)
         
         pointTemp = [np.zeros([len(addPosition)]) for j in range(2)];
-        k = 0
-        for pos in addPosition: # for all the element in the list-type addPosition, we check the type of the element. 
-            
+        
+        # Add position 
+        addPosition_marker = addPosition_options.pop('marker','s')
+        addPosition_markerfc = addPosition_options.pop('markerfacecolor','g')
+        for k, pos in enumerate(addPosition): # for all the element in the list-type addPosition, we check the type of the element. 
             if type(pos) == str: # if it's a str which give a date, we need to call trueAnomaly
                 pos = timeConverter(time=pos)
             
@@ -335,23 +359,66 @@ class Orbit:
                 ta1 = pos
                 
             point = Orbit.positionOnOrbit(self,ta1,pointOfView,unit)
-            if k > 12:
-                plt.plot(point["raPosition"],point["decPosition"],'go')
-            else:
-                plt.plot(point["raPosition"],point["decPosition"],'go')
+
+            plt.plot(point["raPosition"],
+                     point["decPosition"],
+                     marker=addPosition_marker,
+                     markerfacecolor=addPosition_markerfc,
+                     **addPosition_options)
+            
             pointTemp[0][k] = point["raPosition"]
             pointTemp[1][k] = point["decPosition"]
-            k += 1
         
+        # Add points
         if addPoints and len(addPoints) == 2: # test whether the list is empty using the implicit booleanness of the empty sequence (empty sequence are False) 
             plt.plot(addPoints[0], addPoints[1],'b+') 
         elif addPoints and len(addPoints) == 4:
             plt.plot(addPoints[0], addPoints[1],'ko')
             plt.errorbar(addPoints[0],addPoints[1], xerr = addPoints[2], yerr = addPoints[3], fmt = 'k.')
         if link:
+            link_color = kwargs.pop('link_color','r')
             for j in range(len(pointTemp[0])):
-                plt.plot([pointTemp[0][j],addPoints[0][j]],[pointTemp[1][j],addPoints[1][j]],'r')
+                plt.plot([pointTemp[0][j],addPoints[0][j]],
+                         [pointTemp[1][j],addPoints[1][j]],
+                         color=link_color)
+        # Axis invert                     
+        if invert_xaxis:
+            plt.gca().invert_xaxis()
         
+        if invert_yaxis:
+            plt.gca().invert_yaxis()
+            
+        # Cardinal 
+        if cardinal[0]:            
+            x_length = (lim[0][1] - lim[0][0])/8.
+            y_length = x_length
+            
+            if cardinal[1] == 'br':
+                cardinal_center = [lim[0][0],lim[1][0]] # bottom right
+            elif cardinal[1] == 'bl':
+                cardinal_center = [lim[0][1]-1.5*x_length,lim[1][0]]
+            
+            plt.plot([cardinal_center[0]+x_length/4.,cardinal_center[0]+x_length],
+                     [cardinal_center[1]+y_length/4.,cardinal_center[1]+y_length/4.], 
+                     'k',
+                     linewidth=1)
+    
+            plt.plot([cardinal_center[0]+x_length/4.,cardinal_center[0]+x_length/4.],
+                     [cardinal_center[1]+y_length/4.,cardinal_center[1]+y_length], 
+                     'k',
+                     linewidth=1)    
+            
+            plt.text(cardinal_center[0]+x_length+x_length/3.,
+                     cardinal_center[1]+y_length/4.-y_length/12,
+                     '$E$',
+                     fontsize=20)        
+    
+            plt.text(cardinal_center[0]+x_length/4.+x_length/8,
+                     cardinal_center[1]+y_length+y_length/6.,
+                     '$N$',
+                     fontsize=20)                 
+
+        # Save
         if save[0]:
             plt.savefig(save[1]+'.pdf')
         if display:    
@@ -538,6 +605,7 @@ class Orbit:
             
         timeSequence = obs['timePosition']
         obsPositionSequence = {'decPosition' : obs['decPosition'], 'raPosition' : obs['raPosition']}
+        # TODO: old version. Now I should use list comprehension     
         k = 0
         trueAnomalySequence = np.zeros(len(timeSequence))        
         for i in timeSequence:
@@ -549,6 +617,7 @@ class Orbit:
         chi2Dec =   np.sum(np.power(np.abs(obsPositionSequence['decPosition'] - modelPositionSequence['decPosition']) / error['decError'] , 2)) 
         chi2Ra =   np.sum(np.power(np.abs(obsPositionSequence['raPosition'] - modelPositionSequence['raPosition']) / error['raError'] , 2)) 
 
+        
         return chi2Dec+chi2Ra
         
 

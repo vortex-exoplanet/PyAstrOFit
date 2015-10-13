@@ -7,8 +7,7 @@ Author: Olivier Wertz
 Author-email: owertz@ulg.ac.be
 License:  not defined 
 Description: 
-        	      PyAstrOFit
-        
+         PyAstrOFit
         ------------------------------------
           Python Astrometric Orbit Fitting  
         ------------------------------------
@@ -51,26 +50,6 @@ Description:
         numpy
         matplotlib
         astropy
-        
-        
-        INSTALLATION
-        ============
-        
-        
-        DOCUMENTATION 
-        ==============
-        
-        
-        USAGE
-        ======
-        
-        
-        TO-DO
-        =====
-        
-        
-        FAQ
-        ===
         
         
         
