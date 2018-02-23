@@ -11,6 +11,7 @@ dist
 .idea
 
 betaPicb_test.pdf
+files.txt
 
 *.pyc
 */*.pyc
