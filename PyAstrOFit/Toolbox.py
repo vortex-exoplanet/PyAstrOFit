@@ -6,6 +6,7 @@ Created on Fri Jun  5 11:52:30 2015
 """
 
 from __future__ import division
+from __future__ import print_function
 
 __all__ = ['open_pickle',
            'save_pickle',
@@ -30,7 +31,7 @@ def open_pickle(objectToOpen):
         myPickler = pickle.Unpickler(fileRead)
         res = myPickler.load()
     
-    print 'The file {} has been succesfully loaded.'.format(objectToOpen)
+    print('The file {} has been succesfully loaded.'.format(objectToOpen))
     return res
     
 
@@ -67,7 +68,7 @@ def save_pickle(objectToSave, path = None):
         myPickler = pickle.Pickler(fileSave)
         myPickler.dump(objectToSave)
         
-    print 'The file {} has been succesfully saved.'.format(path)
+    print('The file {} has been succesfully saved.'.format(path))
 
 
 # -----------------------------------------------------------------------------
@@ -95,8 +96,8 @@ def send_email(sender,receiver,msg = None,subject = None):
     s.sendmail(sender,receiver,msg_to_send.as_string())
     s.quit()
     
-    print ''
-    print 'The email has been successfully sent.'
+    print('')
+    print('The email has been successfully sent.')
     
     
 # -----------------------------------------------------------------------------
@@ -253,8 +254,6 @@ def radialToEq(r = 1,t = 0, rError = 0, tError = 0, display = False):
     nu = np.mod(np.pi/2.-math.radians(t), 2*np.pi)
     a, b = (rError,r*np.sin(math.radians(tError)))
     
-    
-    
     beta = np.linspace(0,2*np.pi,5000)
     x, y = (u + (a * np.cos(beta) * np.cos(nu) - b * np.sin(beta) * np.sin(nu)), v + (b * np.sin(beta) * np.cos(nu) + a * np.cos(beta) * np.sin(nu)))
     
@@ -360,7 +359,7 @@ def playSound(self, filePath=str()):
         import wave
         import pyaudio
     except ImportError:
-        print 'The package wave and/or pyaudio must be installed.'
+        print('The package wave and/or pyaudio must be installed.')
         return None
             
          

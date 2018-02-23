@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from __future__ import absolute_import
 import math
 import numpy as np
 import random as rand
 from astropy import constants as const
 from astropy.time import Time
 import matplotlib.pyplot as plt
-from KeplerSolver import MarkleyKESolver
+from .KeplerSolver import MarkleyKESolver
 import datetime
 import os
 
-import Orbit as o
+from . import Orbit as o
 
 
 class StatisticsMCMC:  # The inheritance is used to access to the trueAnomaly method of the Orbit class.
@@ -219,7 +221,7 @@ class StatisticsMCMC:  # The inheritance is used to access to the trueAnomaly me
             var[k] = StatisticsMCMC.candidatFromCTPF(self,mean,scaleParameter)
             k += 1
         
-        print(mean,scaleParameter)
+        print((mean,scaleParameter))
         #print(var)
         
         xHist, bins = np.histogram(var,40,density=True)
@@ -665,7 +667,7 @@ class StatisticsMCMC:  # The inheritance is used to access to the trueAnomaly me
             w2 = wStar - np.pi
             omega2 = omegaStar - np.pi
         else:
-            print(wStar,omegaStar)
+            print((wStar,omegaStar))
             print("J'ai merdé quelque part ...")
             print(stop)
             #print(uVector)

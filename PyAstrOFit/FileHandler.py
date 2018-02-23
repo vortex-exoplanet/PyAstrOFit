@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 #import math
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import datetime
 
 
-class FileHandler:
+class FileHandler(object):
     """ DocString:  
         ----------
         Summary::   

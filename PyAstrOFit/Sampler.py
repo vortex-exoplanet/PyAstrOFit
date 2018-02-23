@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import math
 import numpy as np
@@ -15,13 +17,13 @@ from astropy.time import Time
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
-from Diagnostics import gelman_rubin
-from StatisticsMCMC import StatisticsMCMC
-from FileHandler import FileHandler
-import Orbit as o
-from Planet_data import get_planet_data
+from .Diagnostics import gelman_rubin
+from .StatisticsMCMC import StatisticsMCMC
+from .FileHandler import FileHandler
+from . import Orbit
+from .Planet_data import get_planet_data
 
-from Toolbox import cpu_count, now
+from .Toolbox import cpu_count, now
 
 __all__ = ['period',
            'semimajoraxis',
@@ -40,24 +42,24 @@ packageName = 'PyAstrOFit'
 # ------------------------
 #   Top-level functions
 # ------------------------
-# ------------------------------------------------------------------------------------------------------------------------------------------ 
-def period(semiMajorAxis = 1, starMass = 1):
+
+def period(semiMajorAxis=1, starMass=1):
     """
     """
     periodSecSquared = (np.power(semiMajorAxis * const.au.value,3) / (starMass * const.M_sun.value)) * 4 * np.power(np.pi,2) / const.G.value
     period = np.power(periodSecSquared,1./2.) / (365.*24*3600)
     return period
 
-# ------------------------------------------------------------------------------------------------------------------------------------------ 
-def semimajoraxis(period = 1, starMass = 1):
+
+def semimajoraxis(period=1, starMass=1):
     """
     """
     aAUcubic = const.G.value * (starMass * const.M_sun.value) / (4 * np.power(np.pi,2)) * (period * 365.*24*3600)**2
     res_a = np.power(aAUcubic,1./3.) / const.au.value
     return res_a     
 
-# ------------------------------------------------------------------------------------------------------------------------------------------ 
-def toSynthetic(theta,which = 'Pueyo', mass = 1, referenceTime = None):
+
+def toSynthetic(theta, which='Pueyo', mass=1, referenceTime=None):
     """
     """
     if which == 'Pueyo':
@@ -84,8 +86,8 @@ def toSynthetic(theta,which = 'Pueyo', mass = 1, referenceTime = None):
 
     return res
 
-# ------------------------------------------------------------------------------------------------------------------------------------------     
-def toKepler(u, which = 'Pueyo', mass = 1, referenceTime = None):
+
+def toKepler(u, which='Pueyo', mass=1, referenceTime=None):
     """
     """
     if which == 'Pueyo':
@@ -115,8 +117,8 @@ def toKepler(u, which = 'Pueyo', mass = 1, referenceTime = None):
     
     return None
     
-# ------------------------------------------------------------------------------------------------------------------------------------------ 
-def lnprior(theta, bounds = None, synthetic = False):
+
+def lnprior(theta, bounds=None, synthetic = False):
     """
     """
     u0, u1, u2, u3, u4, u5 = theta  
@@ -130,8 +132,8 @@ def lnprior(theta, bounds = None, synthetic = False):
             return 0.0
         return -np.inf
 
-# ------------------------------------------------------------------------------------------------------------------------------------------ 
-def lnlike(theta, ob, er, priors, l, synthetic = False):
+
+def lnlike(theta, ob, er, priors, l, synthetic=False):
     """
     """
     if not synthetic:
@@ -139,7 +141,7 @@ def lnlike(theta, ob, er, priors, l, synthetic = False):
     else:
         a, e, i, omega, w, tp = toKepler(theta, which=priors['which'], mass=priors['starMass'], referenceTime=priors['referenceTime'])
     
-    orbit = o.Orbit(semiMajorAxis=a,eccentricity=e,inclinaison=i,longitudeAscendingNode=omega,periastron=w,periastronTime=tp,starMass=priors['starMass'], dStar=priors['starDistance'])   
+    orbit = Orbit(semiMajorAxis=a,eccentricity=e,inclinaison=i,longitudeAscendingNode=omega,periastron=w,periastronTime=tp,starMass=priors['starMass'], dStar=priors['starDistance'])
                   
     tano = np.array([orbit.trueAnomaly(ob['timePositionJD'][j]) for j in range(l)])                   
     t1 = [orbit.positionOnOrbit(trueAnomaly=tano[j],pointOfView="earth",unit="arcsec") for j in range(l)] 
@@ -165,7 +167,7 @@ def lnprob(theta, ob, er, priors,l, synthetic):
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
-class AISampler(object,FileHandler):
+class AISampler(FileHandler):
     """ 
     A sampler dedicated to orbit fitting using emcee package
     
@@ -211,7 +213,7 @@ class AISampler(object,FileHandler):
             except:
                 raise Exception("Crash during the load of your data. Is the path correct ? --> {}".format(data))
 
-        if len(self._ob.values()[0]) == 0:
+        if len(list(self._ob.values())[0]) == 0:
             raise Exception("The file '{}' seems to be empty.".format(data))
         self._ob['timePositionJD'] = [Time(self._ob['timePosition'][k],format='iso',scale='utc').jd for k in range(len(self._ob['timePosition']))]
         self._l = len(self._ob['timePositionJD'])                
@@ -291,10 +293,10 @@ class AISampler(object,FileHandler):
             
         """
         if self.priors['prior_model'] is None or not prior_model:
-            orbit = o.Orbit()
+            orbit = Orbit()
             show = False
         else:
-            orbit = o.Orbit(semiMajorAxis=self.priors['prior_model'][0],
+            orbit = Orbit(semiMajorAxis=self.priors['prior_model'][0],
                             eccentricity=self.priors['prior_model'][1], 
                             inclinaison=self.priors['prior_model'][2],
                             longitudeAscendingNode=self.priors['prior_model'][3],
@@ -305,10 +307,10 @@ class AISampler(object,FileHandler):
             show = True                            
         
         if lim is None:
-            ra_min = self.data['raPosition'].min()
-            ra_max = self.data['raPosition'].max()
-            dec_min = self.data['decPosition'].min()
-            dec_max = self.data['decPosition'].max()
+            ra_min = np.array(self.data['raPosition']).min()
+            ra_max = np.array(self.data['raPosition']).max()
+            dec_min = np.array(self.data['decPosition']).min()
+            dec_max = np.array(self.data['decPosition']).max()
             index = 0.1
             lim = [[ra_min*(1-index*np.sign(ra_min)),ra_max*(1+index*np.sign(ra_max))],[dec_min*(1-index*np.sign(dec_min)),dec_max*(1+index*np.sign(dec_max))]] 
                     
@@ -413,12 +415,12 @@ class AISampler(object,FileHandler):
         # Let's go !        
         start_time = now() 
         if verbose:
-            print ''
-            print '################################################################'
-            print 'The MCMC run has started.'
-            print ''
-            print 'Start time: {}:{}:{}'.format(start_time[0],start_time[1],start_time[2])
-            print '################################################################'
+            print('')
+            print('################################################################')
+            print('The MCMC run has started.')
+            print('')
+            print('Start time: {}:{}:{}'.format(start_time[0],start_time[1],start_time[2]))
+            print('################################################################')
 
 
         # Output
@@ -447,7 +449,7 @@ class AISampler(object,FileHandler):
                 
         if burnin <= 0 or burnin >= 1:
             burnin = 0.5
-            print 'The burnin parameter should be 0 < burnin < 1. The value {} has been automatically modified to 0.5'.format(burnin)
+            print('The burnin parameter should be 0 < burnin < 1. The value {} has been automatically modified to 0.5'.format(burnin))
         
         if itermin is None:
             itermin = 2e+04/nwalkers
@@ -481,12 +483,14 @@ class AISampler(object,FileHandler):
             
         # Start the chain construction
         if verbose:
-            print 'The construction of {} walkers has started ...'.format(nwalkers)
-            print ''            
+            print('The construction of {} walkers has started ...'.format(nwalkers))
+            print('')            
         start = datetime.datetime.now()
         
-        for k, res in enumerate(sampler_emcee.sample(self._pos,iterations=iterations,storechain=temporary)):
-            chain = AISampler.storechain(self,k,res[0],chain)
+        for k, res in enumerate(sampler_emcee.sample(self._pos,
+                                                     iterations=iterations,
+                                                     storechain=temporary)):
+            chain = AISampler.storechain(self, k, res[0], chain)
 
             ## Criterion for statistical test
             if k == np.amin([math.ceil(itermin*(1+fraction)**geom),lastcheck+math.floor(maxgap)]):
@@ -500,7 +504,7 @@ class AISampler(object,FileHandler):
                     print("   Median acceptance rate (AR) {}".format(ar))
                 if ar < 0.2 or ar > 0.5:
                     if verbose:
-                        print '   >> AR is out of the limit. The hyperparameter a ({}) should be adjusted.'.format(a)
+                        print('   >> AR is out of the limit. The hyperparameter a ({}) should be adjusted.'.format(a))
                                     
                 if showWalk:
                     if not synthetic:
@@ -569,7 +573,7 @@ class AISampler(object,FileHandler):
                  
         
         if k >= limit-1 and verbose:
-                print 'We have reached the maximum number of steps per walker ({}).'.format(limit)
+                print('We have reached the maximum number of steps per walker ({}).'.format(limit))
  
         finish = datetime.datetime.now()   
         elapsedTime = finish-start
@@ -586,13 +590,13 @@ class AISampler(object,FileHandler):
         
         if verbose:
             end_time = now()
-            print ''
-            print '################################################################'
-            print 'The MCMC run has finished.'
-            print ''
-            print 'End time: {}:{}:{}'.format(end_time[0],end_time[1],end_time[2])
-            print 'Total duration: {}'.format(elapsedTime)
-            print '################################################################'
+            print('')
+            print('################################################################')
+            print('The MCMC run has finished.')
+            print('')
+            print('End time: {}:{}:{}'.format(end_time[0],end_time[1],end_time[2]))
+            print('Total duration: {}'.format(elapsedTime))
+            print('################################################################')
 
 
         return AISamplerResults(AISampler.chain_zero_truncated(self,chain),
@@ -602,7 +606,7 @@ class AISampler(object,FileHandler):
                                 AISampler.class_attribut(self))
 
     # ------------------------------------------------------------------------------------------------------------------------------------------        
-    def storechain(self,k,walker_current_position,chain):
+    def storechain(self, k, walker_current_position, chain):
         """
         Returns the chain updated with the new position.
         
@@ -796,7 +800,7 @@ class AISampler(object,FileHandler):
         if save:
             plt.savefig(output+'walk_plot.pdf')
             plt.close(fig)
-            print 'The file {} has been successfully saved.'.format(output+'walk_plot.pdf')
+            print('The file {} has been successfully saved.'.format(output+'walk_plot.pdf'))
             
         else:
             plt.show()
@@ -954,7 +958,7 @@ class AISamplerResults(AISampler):
             myPickler = pickle.Pickler(fileSave)
             myPickler.dump(results)         
       
-        print 'The file has been successfully saved:\n{}'.format(os.getcwd()+'/'+output)        
+        print('The file has been successfully saved:\n{}'.format(os.getcwd()+'/'+output))        
 
 
     # ------------------------------------------------------------------------------------------------------------------------------------------ 
@@ -1019,7 +1023,7 @@ class AISamplerResults(AISampler):
             return isamples_full
         else:
             if length > size:
-                print 'The parameter length ({}) must be <= the length of the Markov chain ({}).'.format(length,size)
+                print('The parameter length ({}) must be <= the length of the Markov chain ({}).'.format(length,size))
                 length = size
             return isamples_full[np.random.choice(range(size),size=length,replace=False),:]            
             
