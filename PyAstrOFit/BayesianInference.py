@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 from astropy.time import Time
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
-from FileHandler import FileHandler as fh
-import Orbit as o
-from Planet_data import get_planet_data
-from Sampler import toKepler
+from .FileHandler import FileHandler as fh
+from . import Orbit as o
+from .Planet_data import get_planet_data
+from .Sampler import toKepler
 
 try:
     import corner as triangle
@@ -190,7 +192,7 @@ class BayesianInference(object):
         self._length = self._isamples.shape[0]
         
         if verbose:
-            print 'Independent samples have been created and stored in the attribut: isamples.'
+            print('Independent samples have been created and stored in the attribut: isamples.')
          
 
     # ------------------------------------------------------------------------------------------------------------------------------------------        
@@ -247,8 +249,8 @@ class BayesianInference(object):
             if self._synthetic:            
                 isamples = self._isamples_synthetic
             else:
-                print 'The parameter -synthetic- was set to {} during the MCMC run.'.format(self._synthetic)
-                print 'Therefore, isamples is used instead of isamples_synthetic.'
+                print('The parameter -synthetic- was set to {} during the MCMC run.'.format(self._synthetic))
+                print('Therefore, isamples is used instead of isamples_synthetic.')
                 isamples = self._isamples
                 back_to_synthetic_elements = False
         else:
@@ -258,7 +260,7 @@ class BayesianInference(object):
         #        isamples = isamples.reshape((-1,6))
             
         if isamples.shape[0] == 0:
-            print 'It seems that the isamples attribut is empty. You should first run independent_samples().'
+            print('It seems that the isamples attribut is empty. You should first run independent_samples().')
             return None       
 
 
@@ -380,7 +382,7 @@ class BayesianInference(object):
         
         """
         if self._isamples.shape[0] == 0:
-            print 'No independant samples found. You should first run the method: independent_samples().'
+            print('No independant samples found. You should first run the method: independent_samples().')
             return None, None        
         
         title = kwargs.pop('title',None)                
@@ -429,7 +431,7 @@ class BayesianInference(object):
                 pourcentage = test/surface_total*100.
                 if pourcentage > cfd:
                     if verbose:
-                        print 'pourcentage for {}: {}%'.format(label_file[j],pourcentage)
+                        print('pourcentage for {}: {}%'.format(label_file[j],pourcentage))
                     break
             n_arg_min = n_arg_sort[:k].min()
             n_arg_max = n_arg_sort[:k+1].max()
@@ -510,11 +512,11 @@ class BayesianInference(object):
         
         """
         if self.lnprobability is None:
-            print '''The method -best_solution()- can only be called if the
-log-likelihood class attribut (lnprobability) has been given.'''
+            print('''The method -best_solution()- can only be called if the
+log-likelihood class attribut (lnprobability) has been given.''')
             return None
         elif self.isamples.shape[0] == 0:
-            print 'No independant samples found. You should first run the method: independent_samples().'
+            print('No independant samples found. You should first run the method: independent_samples().')
             return None
             
         index = self._ilnprobability.argmax()
@@ -539,18 +541,18 @@ log-likelihood class attribut (lnprobability) has been given.'''
         
         """  
         if self._isamples.shape[0] == 0:
-            print 'No independant samples found. You should first run the method: independent_samples().'
+            print('No independant samples found. You should first run the method: independent_samples().')
             return None        
         
         if self.lnprobability is None:
-            print '''The method -solution_in_confidence()- can only be called 
-if the log-likelihood was given when instanciate the BayesianInference object.'''
+            print('''The method -solution_in_confidence()- can only be called 
+if the log-likelihood was given when instanciate the BayesianInference object.''')
             return None                        
            
         if valMax is None and self.valMax is not None:   
             valMax = self.valMax
         elif valMax is None and self.valMax is None:
-            print 'No confidence interval found. You should first run the method: confidence()'
+            print('No confidence interval found. You should first run the method: confidence()')
             return None
             
         if confidenceInterval is None and self.confidenceInterval is not None:
@@ -578,7 +580,7 @@ if the log-likelihood was given when instanciate the BayesianInference object.''
         self._ichi2_out_confidence = chi2_all[sol_out_confidence]            
         
         if verbose:
-            print 'Solutions in (resp. out of) confidence intervals have been stored in attribut isamples_in_conficence (resp. isamples_out_confidence).'
+            print('Solutions in (resp. out of) confidence intervals have been stored in attribut isamples_in_conficence (resp. isamples_out_confidence).')
         
         #return self._isamples_in_confidence, self._ichi2_in_confidence
         
@@ -618,11 +620,11 @@ if the log-likelihood was given when instanciate the BayesianInference object.''
         
         # Dependencies
         if self.isamples.shape[0] == 0:
-            print 'No independant samples found. You should first run the method: independent_samples().'
+            print('No independant samples found. You should first run the method: independent_samples().')
             return None, None
         
         if self.lnprobability is not None and self._isamples_in_confidence.shape[0]==0:
-            print 'No independant samples in confidence found. You should first run the method: solution_in_confidence().'
+            print('No independant samples in confidence found. You should first run the method: solution_in_confidence().')
             return None, None
 
  
@@ -665,7 +667,7 @@ if the log-likelihood was given when instanciate the BayesianInference object.''
             chi2_res = chi2_condition_ok[which]
             
             if verbose:
-                print '{} solutions with a reduced chi2 <= {} have been found.'.format(p_res.shape[0], chi2_max)
+                print('{} solutions with a reduced chi2 <= {} have been found.'.format(p_res.shape[0], chi2_max))
             return p_res, chi2_res
         #else:
         #    print 'Confidence interval not found. You should start running the method confidence()'
@@ -726,7 +728,7 @@ if the log-likelihood was given when instanciate the BayesianInference object.''
             try:
                 return parameterMin, chi2Orbit
             except:
-                print 'No solution with chi2r <= {} have been found in the sample of {} tested orbits.\nThe minimum chi2r found in this sample is {}'.format(condition,nOrbit,chi2_min)              
+                print('No solution with chi2r <= {} have been found in the sample of {} tested orbits.\nThe minimum chi2r found in this sample is {}'.format(condition,nOrbit,chi2_min))              
                 return None, None
         
         # A SET OF SOLUTIONS 
@@ -793,7 +795,7 @@ if the log-likelihood was given when instanciate the BayesianInference object.''
             try:
                 return (parameterMin, chi2Orbit)
             except:
-                print 'No solutions with chi2r <= {} have been found in the sample of {} tested orbits.\nThe minimum chi2r found in this sample is {}'.format(condition,nOrbit,chi2_min)
+                print('No solutions with chi2r <= {} have been found in the sample of {} tested orbits.\nThe minimum chi2r found in this sample is {}'.format(condition,nOrbit,chi2_min))
                 return (None, None)
 
 #    # ------------------------------------------------------------------------------------------------------------------------------------------                

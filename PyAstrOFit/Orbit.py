@@ -4,6 +4,8 @@ Created on Mon Nov 17 07:45:24 2014
 
 @author: Dr. Olivier Wertz
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 __all__ = ["Orbit"]
 
@@ -14,8 +16,8 @@ from astropy import constants as const
 from astropy.time import Time
 import matplotlib.pyplot as plt
 
-from Toolbox import timeConverter
-from KeplerSolver import MarkleyKESolver
+from .Toolbox import timeConverter
+from .KeplerSolver import MarkleyKESolver
 
 
 class Orbit:

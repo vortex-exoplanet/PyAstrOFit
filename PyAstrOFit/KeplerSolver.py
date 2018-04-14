@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
+from __future__ import print_function
 
 __all__ = ["KeplerSolver","KeplerEllipse"]
 
@@ -120,7 +121,7 @@ class MarkleyKESolver:
       M1 = E - e*math.sin(E)
       M = M - numpy.floor(M/(2.*pi))*2*pi
       maxdev = max(maxdev, abs(M-M1))
-    print "Maximal deviation in resulting mean anomaly (M): ", maxdev
+    print("Maximal deviation in resulting mean anomaly (M): ", maxdev)
     return maxdev
   
   def getE(self, M, e):
@@ -632,7 +633,7 @@ def phaseAngle(pos, los='-z'):
     N = len(pos[::,0])
     result = numpy.zeros(N)
     for i in xrange(N):
-      print i, numpy.sum((-pos[i,::]) * (-l.los)), pos[i,::]
+      print(i, numpy.sum((-pos[i,::]) * (-l.los)), pos[i,::])
       result[i] = numpy.arccos( numpy.sum((-pos[i,::]) * (-l.los)) / \
                   numpy.sqrt(numpy.sum(pos[i,::]**2)) )
     return result/numpy.pi*180.
